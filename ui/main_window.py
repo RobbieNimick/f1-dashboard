@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, QPushButton, QLabel)
 from PyQt5.QtCore import Qt
 from api.f1api import get_driver_standings, get_last_race_results
+from PyQt5.QtGui import QColor, QBrush
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -45,15 +46,20 @@ class MainWindow(QMainWindow):
         self.refresh_button.setEnabled(True)
 
     def populate_driver_table(self, drivers):
-        self.driver_table.setColumnCount(4)
-        self.driver_table.setHorizontalHeaderLabels(["Number", "Name", "Team", "Country"])
+        self.driver_table.setColumnCount(3)
+        self.driver_table.setHorizontalHeaderLabels(["Number", "Name", "Team"])
         self.driver_table.setRowCount(len(drivers))
 
         for row, driver in enumerate(drivers):
             self.driver_table.setItem(row, 0, QTableWidgetItem(str(driver.get("driver_number", ""))))
             self.driver_table.setItem(row, 1, QTableWidgetItem(driver.get("full_name", "")))
             self.driver_table.setItem(row, 2, QTableWidgetItem(driver.get("team_name", "")))
-            self.driver_table.setItem(row, 3, QTableWidgetItem(driver.get("country_code") or ""))
+        
+            colour = driver.get("team_colour", "FFFFFF")
+            for col in range(3):
+                item = self.driver_table.item(row, col)
+                if item:
+                    item.setBackground(QBrush(QColor(f"#{colour}")))
 
         self.driver_table.horizontalHeader().setStretchLastSection(True)
         self.driver_table.setEditTriggers(QTableWidget.NoEditTriggers)
