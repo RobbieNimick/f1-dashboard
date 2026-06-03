@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, QPushButton, QLabel)
 from PyQt5.QtCore import Qt
-from api.f1api import get_driver_standings, get_last_race_results
+from api.f1api import get_last_race_results, get_driver_championship
 from PyQt5.QtGui import QColor, QBrush
 
 class MainWindow(QMainWindow):
@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.refresh_button.setText("Loading...")
         self.refresh_button.setEnabled(False)
 
-        drivers = get_driver_standings()
+        drivers = get_driver_championship()
         self.populate_driver_table(drivers)
 
         results = get_last_race_results()
@@ -46,20 +46,23 @@ class MainWindow(QMainWindow):
         self.refresh_button.setEnabled(True)
 
     def populate_driver_table(self, drivers):
-        self.driver_table.setColumnCount(3)
-        self.driver_table.setHorizontalHeaderLabels(["Number", "Name", "Team"])
+        self.driver_table.setColumnCount(5)
+        self.driver_table.setHorizontalHeaderLabels(["Pos", "Driver", "Nationality", "Team", "Points"])
         self.driver_table.setRowCount(len(drivers))
 
         for row, driver in enumerate(drivers):
-            self.driver_table.setItem(row, 0, QTableWidgetItem(str(driver.get("driver_number", ""))))
-            self.driver_table.setItem(row, 1, QTableWidgetItem(driver.get("full_name", "")))
-            self.driver_table.setItem(row, 2, QTableWidgetItem(driver.get("team_name", "")))
-        
-            colour = driver.get("team_colour", "FFFFFF")
-            for col in range(3):
-                item = self.driver_table.item(row, col)
-                if item:
-                    item.setBackground(QBrush(QColor(f"#{colour}")))
+            full_name = f"{driver['Driver']['givenName']} {driver['Driver']['familyName']}"
+            nationality = driver['Driver']['nationality']
+            team = driver['Constructors'][0]['name']
+            position = driver['position']
+            points = driver['points']
+
+            self.driver_table.setItem(row, 0, QTableWidgetItem(position))
+            self.driver_table.setItem(row, 1, QTableWidgetItem(full_name))
+            self.driver_table.setItem(row, 2, QTableWidgetItem(nationality))
+            self.driver_table.setItem(row, 3, QTableWidgetItem(team))
+            self.driver_table.setItem(row, 4, QTableWidgetItem(points))
+            
 
         self.driver_table.horizontalHeader().setStretchLastSection(True)
         self.driver_table.setEditTriggers(QTableWidget.NoEditTriggers)
