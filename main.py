@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QPalette, QColor
 from ui.main_window import MainWindow
 
-def apply_dark_theme(app):
+def apply_dark_theme(app): # Styling for the application
     palette = QPalette()
     palette.setColor(QPalette.Window, QColor(30, 30, 30))
     palette.setColor(QPalette.WindowText, QColor(255, 255, 255))
@@ -16,7 +16,7 @@ def apply_dark_theme(app):
     palette.setColor(QPalette.HighlightedText, QColor(0, 0, 0))
     app.setPalette(palette)
 
-def main():
+def main(): # Where application actually runs
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     apply_dark_theme(app)
@@ -24,5 +24,5 @@ def main():
     window.show()
     sys.exit(app.exec_())
 
-if __name__ == "__main__":
+if __name__ == "__main__": # Only allows direct execution. 
     main()

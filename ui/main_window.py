@@ -1,23 +1,23 @@
 import sys
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, QPushButton, QLabel)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, QPushButton, QLabel, QMessageBox)
 from PyQt5.QtCore import Qt
 from api.f1api import get_last_race_results, get_driver_championship
 from PyQt5.QtGui import QColor, QBrush
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow): # Defines main window, provided by PyQt5
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("F1 Dashboard")
+        self.setWindowTitle("F1 Dashboard") # Title bar
         self.setMinimumSize(800, 600)
 
-        central_widget = QWidget()
+        central_widget = QWidget() # Widget for inside main window
         self.setCentralWidget(central_widget)
 
         layout = QVBoxLayout()
         central_widget.setLayout(layout)
 
-        self.tabs = QTabWidget()
+        self.tabs = QTabWidget() # Tab bar + refresh button
         layout.addWidget(self.tabs)
 
         self.refresh_button = QPushButton("Refresh Data")
@@ -27,30 +27,35 @@ class MainWindow(QMainWindow):
         self.driver_table = QTableWidget()
         self.race_table = QTableWidget()
 
-        self.tabs.addTab(self.driver_table, "Drivers")
+        self.tabs.addTab(self.driver_table, "Drivers") # Two empty tables inside tabs
         self.tabs.addTab(self.race_table, "Last Race")
 
         self.load_data()
 
-    def load_data(self):
+    def load_data(self): # Grabs then displays data. Try/Except for error handling. 
         self.refresh_button.setText("Loading...")
         self.refresh_button.setEnabled(False)
 
-        drivers = get_driver_championship()
-        self.populate_driver_table(drivers)
+        try: 
+            drivers = get_driver_championship()
+            self.populate_driver_table(drivers)
 
-        results = get_last_race_results()
-        self.populate_race_table(results)
+            results = get_last_race_results()
+            self.populate_race_table(results)
 
-        self.refresh_button.setText("Refresh Data")
-        self.refresh_button.setEnabled(True)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"failed to load data:\n{str(e)}")
 
-    def populate_driver_table(self, drivers):
+        finally:
+            self.refresh_button.setText("Refresh Data")
+            self.refresh_button.setEnabled(True)
+
+    def populate_driver_table(self, drivers): # Defines table structure for drivers
         self.driver_table.setColumnCount(5)
         self.driver_table.setHorizontalHeaderLabels(["Pos", "Driver", "Nationality", "Team", "Points"])
         self.driver_table.setRowCount(len(drivers))
 
-        for row, driver in enumerate(drivers):
+        for row, driver in enumerate(drivers): # Loop to go through each driver and extract data from Jolpica
             full_name = f"{driver['Driver']['givenName']} {driver['Driver']['familyName']}"
             nationality = driver['Driver']['nationality']
             team = driver['Constructors'][0]['name']
@@ -67,7 +72,7 @@ class MainWindow(QMainWindow):
         self.driver_table.horizontalHeader().setStretchLastSection(True)
         self.driver_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-    def populate_race_table(self, results):
+    def populate_race_table(self, results): # Same as above but for last race
         self.race_table.setColumnCount(3)
         self.race_table.setHorizontalHeaderLabels(
         ["Position", "Driver", "Team"])
